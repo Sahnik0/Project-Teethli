@@ -1,7 +1,6 @@
-
-// Cloudinary configuration
-const CLOUD_NAME = "dkrlsysdg";
-const UPLOAD_PRESET = "election_candidates";
+// Cloudinary configuration from environment variables
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
 // Type definitions for Cloudinary responses
 interface CloudinaryUploadResponse {
@@ -30,6 +29,10 @@ export const uploadToCloudinary = async (
   folder = "patient_images"
 ): Promise<CloudinaryUploadResponse> => {
   try {
+    if (!CLOUD_NAME || !UPLOAD_PRESET) {
+      throw new Error("Cloudinary configuration is missing in environment variables");
+    }
+
     const formData = new FormData();
     formData.append("file", imageFile);
     formData.append("upload_preset", UPLOAD_PRESET);

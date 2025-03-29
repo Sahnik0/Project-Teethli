@@ -1,4 +1,3 @@
-
 export interface GeminiResponse {
   diagnosis: string;
   treatment: string;
@@ -11,8 +10,13 @@ export const generateDiagnosisAndTreatment = async (
   patientSex: string
 ): Promise<GeminiResponse> => {
   try {
-    // Using the provided Gemini API key
-    const GEMINI_API_KEY = "AIzaSyASxWV8JxgrR6GomlwPvgN_lssmNNRgt00";
+    // Using the API key from environment variables
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!GEMINI_API_KEY) {
+      throw new Error("Gemini API key not found in environment variables");
+    }
+    
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.0-pro:generateContent?key=${GEMINI_API_KEY}`;
 
     const prompt = `
