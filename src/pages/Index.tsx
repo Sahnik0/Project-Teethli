@@ -15,7 +15,7 @@ const Index = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            MediTrack
+            Teethli
           </motion.h1>
           <motion.p 
             className="text-lg md:text-xl text-gray-700 mb-10 max-w-3xl mx-auto"
@@ -115,7 +115,7 @@ const Index = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            Why Choose MediTrack?
+            Why Choose Teethli?
           </motion.h2>
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
