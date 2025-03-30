@@ -1,4 +1,3 @@
-
 export interface GeminiResponse {
   diagnosis: string;
   treatment: string;
@@ -11,15 +10,19 @@ export const generateDiagnosisAndTreatment = async (
   patientSex: string
 ): Promise<GeminiResponse> => {
   try {
-    // Using the provided Gemini API key - Free version
-    const GEMINI_API_KEY = "AIzaSyASxWV8JxgrR6GomlwPvgN_lssmNNRgt00";
+    // Using the provided Gemini API key from environment variables
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!GEMINI_API_KEY) {
+      throw new Error("Gemini API key not found in environment variables");
+    }
     
     // Use the correct API endpoint for Gemini 2.0 Flash
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-    // Creating a prompt optimized for the Gemini 2.0 Flash model
+    // Creating an optimized prompt for more effective and precise responses
     const prompt = `
-      Acting as an expert medical professional, provide a detailed medical diagnosis and treatment plan based on the following information:
+      As an expert medical professional, analyze the following patient information and provide a concise, precise diagnosis and treatment plan:
       
       Patient Information:
       - Age: ${patientAge}
@@ -27,17 +30,24 @@ export const generateDiagnosisAndTreatment = async (
       - Symptoms: ${symptoms}
       - Doctor's initial diagnosis description: ${diagnosisDescription}
 
-      First, write a paragraph starting with "DIAGNOSIS: " that provides a professional, detailed explanation of the most likely medical condition based on the provided information.
+      Respond with exactly two sections:
 
-      Then, provide a section starting with "TREATMENT: " that includes a concise treatment plan with 3-5 specific bullet points. Each bullet point should be brief (1-2 sentences maximum) and should address:
-      - Medications (with dosage when applicable)
-      - Lifestyle recommendations
-      - Follow-up care suggestions
-      - Any special instructions
+      1. Start with "DIAGNOSIS:" followed by a clear, specific medical assessment based on the provided symptoms and description. Be precise and professional. (Maximum 200 words)
 
-      Format each bullet point with a proper dash or bullet and place important terms or emphasis in *asterisks* to indicate they should be bolded.
+      2. Then provide "TREATMENT:" with exactly 3-4 bullet points that cover:
+         - Medication recommendations with specific dosages where applicable
+         - Key lifestyle modifications
+         - Follow-up care instructions
+         - Any critical warning signs to watch for
 
-      Make your response concise yet professional. Use medical terminology appropriately but ensure it's still clear to patients.
+      IMPORTANT CONSTRAINTS:
+      - The treatment section must NOT exceed 150 words total
+      - Each bullet point should be 1-2 sentences maximum
+      - Format bullet points with "•" symbols
+      - Do not use *asterisks* in the entire response
+      - Use medical terminology appropriately but ensure it remains understandable to patients
+      - Be specific and actionable in your recommendations
+      - Do not include disclaimers or AI-related statements
     `;
 
     const requestBody = {
@@ -47,8 +57,8 @@ export const generateDiagnosisAndTreatment = async (
         }]
       }],
       generationConfig: {
-        temperature: 0.4,
-        topP: 0.8,
+        temperature: 0.3,  // Reduced for more consistency
+        topP: 0.7,
         topK: 40,
         maxOutputTokens: 1024,
       }
