@@ -63,7 +63,7 @@ const DashboardLayout = () => {
         <SidebarHeader>
           <div className="flex items-center space-x-2 px-4 py-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-medical-accent text-white">
-              <span className="text-xl font-semibold">M</span>
+              <span className="text-xl font-semibold">T</span>
             </div>
             <div className="text-lg font-semibold text-sidebar-foreground">Teethli</div>
           </div>

@@ -69,36 +69,45 @@ const Prescriptions = () => {
   const formatDate = (date: Date | number | any): string => {
     if (!date) return "N/A";
     
-    let dateToFormat: Date;
-    
-    // Handle Firebase Timestamp objects
-    if (date && typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
-      dateToFormat = date.toDate();
+    try {
+      let dateToFormat: Date;
+      
+      // Handle Firebase Timestamp objects
+      if (date && typeof date === 'object' && 'toDate' in date && typeof date.toDate === 'function') {
+        dateToFormat = date.toDate();
+      }
+      // Handle numeric timestamps
+      else if (typeof date === 'number') {
+        dateToFormat = new Date(date);
+      }
+      // Handle Date objects
+      else if (date instanceof Date) {
+        dateToFormat = date;
+      }
+      // Handle string dates
+      else if (typeof date === 'string') {
+        dateToFormat = new Date(date);
+      }
+      else {
+        console.error("Invalid date format:", date);
+        return "Invalid Date";
+      }
+      
+      // Check if the date is valid before calling toLocaleDateString
+      if (isNaN(dateToFormat.getTime())) {
+        console.error("Invalid date value:", date);
+        return "Invalid Date";
+      }
+      
+      return new Intl.DateTimeFormat('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      }).format(dateToFormat);
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return "Date error";
     }
-    // Handle numeric timestamps
-    else if (typeof date === 'number') {
-      dateToFormat = new Date(date);
-    }
-    // Handle Date objects
-    else if (date instanceof Date) {
-      dateToFormat = date;
-    }
-    // Handle string dates
-    else if (typeof date === 'string') {
-      dateToFormat = new Date(date);
-    }
-    else {
-      console.error("Invalid date format:", date);
-      return "Invalid Date";
-    }
-    
-    // Check if the date is valid
-    if (isNaN(dateToFormat.getTime())) {
-      console.error("Invalid date value:", date);
-      return "Invalid Date";
-    }
-    
-    return dateToFormat.toLocaleDateString();
   };
 
   if (loading) {
@@ -113,7 +122,7 @@ const Prescriptions = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Prescriptions</CardTitle>
+          <CardTitle>Teethli Prescriptions</CardTitle>
           <CardDescription>
             View and manage all patient prescriptions
           </CardDescription>

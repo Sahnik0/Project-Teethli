@@ -1,3 +1,4 @@
+
 import { 
   collection, 
   doc, 
@@ -22,6 +23,7 @@ import { uploadToCloudinary } from './cloudinaryService';
 const uploadImageWithRetry = async (
   doctorId: string, 
   imageFile: File, 
+  folder: string = 'patients',
   maxRetries = 3
 ): Promise<{imageUrl: string, publicId: string}> => {
   let retries = 0;
@@ -33,7 +35,7 @@ const uploadImageWithRetry = async (
       
       const uploadResult = await uploadToCloudinary(
         imageFile, 
-        `patients/${doctorId}`
+        `${folder}/${doctorId}`
       );
       
       console.log("Cloudinary upload successful:", uploadResult.secure_url);
@@ -59,24 +61,52 @@ const uploadImageWithRetry = async (
 export const addPatient = async (
   doctorId: string, 
   patientData: Omit<Patient, 'id' | 'doctorId' | 'createdAt' | 'updatedAt'>,
-  imageFile?: File
+  medicalImageFile?: File,
+  patientImageFile?: File
 ): Promise<Patient> => {
   try {
-    // First, upload the image if provided
+    // First, upload the medical image if provided
     let imageUrl = '';
     let imagePublicId = '';
+    let patientImageUrl = '';
+    let patientImagePublicId = '';
     
-    if (imageFile) {
+    if (medicalImageFile) {
       try {
-        const uploadResult = await uploadImageWithRetry(doctorId, imageFile);
+        const uploadResult = await uploadImageWithRetry(
+          doctorId, 
+          medicalImageFile,
+          'medical_images'
+        );
         imageUrl = uploadResult.imageUrl;
         imagePublicId = uploadResult.publicId;
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Error uploading medical image:", error);
         toast({
           variant: "destructive",
-          title: "Image Upload Failed",
-          description: "We'll continue without the image. You can try adding it later."
+          title: "Medical Image Upload Failed",
+          description: "We'll continue without the medical image. You can try adding it later."
+        });
+        // Continue without image
+      }
+    }
+    
+    // Then upload the patient image if provided
+    if (patientImageFile) {
+      try {
+        const uploadResult = await uploadImageWithRetry(
+          doctorId, 
+          patientImageFile,
+          'patient_photos'
+        );
+        patientImageUrl = uploadResult.imageUrl;
+        patientImagePublicId = uploadResult.publicId;
+      } catch (error) {
+        console.error("Error uploading patient image:", error);
+        toast({
+          variant: "destructive",
+          title: "Patient Photo Upload Failed",
+          description: "We'll continue without the patient photo. You can try adding it later."
         });
         // Continue without image
       }
@@ -112,6 +142,8 @@ export const addPatient = async (
       doctorId,
       imageUrl,
       imagePublicId,
+      patientImageUrl,
+      patientImagePublicId,
       diagnosis: aiResponse.diagnosis,
       treatment: aiResponse.treatment,
       createdAt: serverTimestamp(),
@@ -138,7 +170,8 @@ export const addPatient = async (
 export const updatePatient = async (
   patientId: string,
   patientData: Partial<Patient>,
-  imageFile?: File
+  medicalImageFile?: File,
+  patientImageFile?: File
 ): Promise<Patient> => {
   try {
     const patientRef = doc(db, 'patients', patientId);
@@ -151,23 +184,46 @@ export const updatePatient = async (
     const currentPatient = patientSnapshot.data() as Patient;
     let imageUrl = currentPatient.imageUrl || '';
     let imagePublicId = currentPatient.imagePublicId || '';
+    let patientImageUrl = currentPatient.patientImageUrl || '';
+    let patientImagePublicId = currentPatient.patientImagePublicId || '';
     
-    // If a new image is provided, upload it
-    if (imageFile) {
-      // Upload new image to Cloudinary (old images will be automatically removed by Cloudinary media library policies)
+    // If a new medical image is provided, upload it
+    if (medicalImageFile) {
       try {
         const uploadResult = await uploadImageWithRetry(
           currentPatient.doctorId, 
-          imageFile
+          medicalImageFile,
+          'medical_images'
         );
         imageUrl = uploadResult.imageUrl;
         imagePublicId = uploadResult.publicId;
       } catch (error) {
-        console.error("Error uploading new image:", error);
+        console.error("Error uploading new medical image:", error);
         toast({
           variant: "destructive",
-          title: "Image Upload Failed",
-          description: "We'll continue with the existing image."
+          title: "Medical Image Upload Failed",
+          description: "We'll continue with the existing medical image."
+        });
+        // Continue with existing image
+      }
+    }
+    
+    // If a new patient image is provided, upload it
+    if (patientImageFile) {
+      try {
+        const uploadResult = await uploadImageWithRetry(
+          currentPatient.doctorId, 
+          patientImageFile,
+          'patient_photos'
+        );
+        patientImageUrl = uploadResult.imageUrl;
+        patientImagePublicId = uploadResult.publicId;
+      } catch (error) {
+        console.error("Error uploading new patient image:", error);
+        toast({
+          variant: "destructive",
+          title: "Patient Photo Upload Failed",
+          description: "We'll continue with the existing patient photo."
         });
         // Continue with existing image
       }
@@ -176,8 +232,10 @@ export const updatePatient = async (
     // Update patient with new data
     const updateData = {
       ...patientData,
-      imageUrl,
-      imagePublicId,
+      imageUrl: patientData.imageUrl !== undefined ? patientData.imageUrl : imageUrl,
+      imagePublicId: patientData.imagePublicId !== undefined ? patientData.imagePublicId : imagePublicId,
+      patientImageUrl: patientData.patientImageUrl !== undefined ? patientData.patientImageUrl : patientImageUrl,
+      patientImagePublicId: patientData.patientImagePublicId !== undefined ? patientData.patientImagePublicId : patientImagePublicId,
       updatedAt: serverTimestamp(),
     };
     

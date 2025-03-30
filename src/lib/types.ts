@@ -16,10 +16,13 @@ export interface Patient {
   name: string;
   age: number;
   sex: "Male" | "Female" | "Other";
+  address?: string;
   symptoms: string;
   diagnosisDescription: string;
   imageUrl?: string;
   imagePublicId?: string;
+  patientImageUrl?: string;  // New field for patient's personal image
+  patientImagePublicId?: string; // New field for patient's personal image ID
   diagnosis?: string;
   treatment?: string;
   createdAt: Date | number;

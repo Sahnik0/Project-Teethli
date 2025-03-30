@@ -29,10 +29,6 @@ export const uploadToCloudinary = async (
   folder = "patient_images"
 ): Promise<CloudinaryUploadResponse> => {
   try {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      throw new Error("Cloudinary configuration is missing in environment variables");
-    }
-
     const formData = new FormData();
     formData.append("file", imageFile);
     formData.append("upload_preset", UPLOAD_PRESET);
@@ -69,6 +65,24 @@ export const uploadToCloudinary = async (
  */
 export const getOptimizedImageUrl = (publicId: string, maxWidth = 800): string => {
   return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_limit,w_${maxWidth},q_auto,f_auto/${publicId}`;
+};
+
+/**
+ * Gets an optimized patient portrait image
+ * @param publicId - Cloudinary public ID
+ * @returns Portrait-optimized image URL
+ */
+export const getPatientPortraitUrl = (publicId: string): string => {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_fill,w_200,h_250,g_face,q_auto,f_auto/${publicId}`;
+};
+
+/**
+ * Gets an optimized medical condition image
+ * @param publicId - Cloudinary public ID
+ * @returns Medical image URL with appropriate transformations
+ */
+export const getMedicalImageUrl = (publicId: string): string => {
+  return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/c_limit,w_700,q_auto,f_auto/${publicId}`;
 };
 
 /**

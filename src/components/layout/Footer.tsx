@@ -19,7 +19,7 @@ const Footer = () => {
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-medical-primary text-white">
                 <span className="text-lg font-semibold">M</span>
               </div>
-              <h3 className="text-lg font-bold text-medical-primary">Teethli</h3>
+              <h3 className="text-lg font-bold text-medical-primary">MediTrack</h3>
             </motion.div>
             <motion.p 
               className="text-sm text-gray-600"
@@ -84,13 +84,13 @@ const Footer = () => {
               transition={{ delay: 0.1 }}
             >
               <li className="text-sm text-gray-600">
-                <span className="font-medium">Email:</span> tb123983@gmai.com
+                <span className="font-medium">Email:</span> support@meditrack.com
               </li>
               <li className="text-sm text-gray-600">
-                <span className="font-medium">Phone:</span> +91 7407902174
+                <span className="font-medium">Phone:</span> +1 (555) 123-4567
               </li>
               <li className="text-sm text-gray-600">
-                <span className="font-medium">Address:</span> Barasat, Healthcare City
+                <span className="font-medium">Address:</span> 123 Medical Ave, Healthcare City
               </li>
             </motion.ul>
           </div>
@@ -103,7 +103,7 @@ const Footer = () => {
             whileInView={{ opacity: 1 }}
             viewport={{ once: true }}
           >
-            &copy; {currentYear} Teethli. All rights reserved.
+            &copy; {currentYear} MediTrack. All rights reserved.
           </motion.p>
         </div>
       </div>

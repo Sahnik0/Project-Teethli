@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, UserCircle, Image } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AddPatient = () => {
   const { doctor } = useAuth();
@@ -18,13 +19,17 @@ const AddPatient = () => {
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState<'Male' | 'Female' | 'Other'>('Male');
+  const [address, setAddress] = useState('');
   const [symptoms, setSymptoms] = useState('');
   const [diagnosisDescription, setDiagnosisDescription] = useState('');
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [medicalImage, setMedicalImage] = useState<File | null>(null);
+  const [medicalImagePreview, setMedicalImagePreview] = useState<string | null>(null);
+  const [patientImage, setPatientImage] = useState<File | null>(null);
+  const [patientImagePreview, setPatientImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState('info');
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'medical' | 'patient') => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       
@@ -49,14 +54,24 @@ const AddPatient = () => {
         return;
       }
       
-      setImage(file);
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      // Set the appropriate state based on image type
+      if (type === 'medical') {
+        setMedicalImage(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setMedicalImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        setPatientImage(file);
+        // Create preview
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPatientImagePreview(reader.result as string);
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -82,6 +97,16 @@ const AddPatient = () => {
       return;
     }
     
+    // Validate mandatory medical image
+    if (!medicalImage) {
+      toast({
+        variant: "destructive",
+        title: "Missing medical image",
+        description: "Please upload a medical condition image",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -89,11 +114,17 @@ const AddPatient = () => {
         name,
         age: parseInt(age),
         sex,
+        address,
         symptoms,
         diagnosisDescription,
       };
       
-      const patient = await addPatient(doctor.id, patientData, image || undefined);
+      const patient = await addPatient(
+        doctor.id, 
+        patientData, 
+        medicalImage,
+        patientImage || undefined
+      );
       
       toast({
         title: "Patient added successfully",
@@ -114,160 +145,306 @@ const AddPatient = () => {
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full max-w-3xl mx-auto animate-fade-in">
       <CardHeader>
         <CardTitle>Add New Patient</CardTitle>
         <CardDescription>
-          Create a new patient record and generate a prescription
+          Create a new Teethli patient record and generate a prescription
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="name" className="text-sm font-medium">
-                Patient Name <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="name"
-                placeholder="Full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <label htmlFor="age" className="text-sm font-medium">
-                Age <span className="text-red-500">*</span>
-              </label>
-              <Input
-                id="age"
-                type="number"
-                placeholder="Age in years"
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                min="0"
-                max="120"
-                required
-              />
-            </div>
-          </div>
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="info" className="transition-all duration-300">
+              Patient Info
+            </TabsTrigger>
+            <TabsTrigger value="diagnosis" className="transition-all duration-300">
+              Diagnosis
+            </TabsTrigger>
+            <TabsTrigger value="images" className="transition-all duration-300">
+              Images
+            </TabsTrigger>
+          </TabsList>
           
-          <div className="space-y-2">
-            <label htmlFor="sex" className="text-sm font-medium">
-              Sex <span className="text-red-500">*</span>
-            </label>
-            <Select value={sex} onValueChange={(value) => setSex(value as 'Male' | 'Female' | 'Other')}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select sex" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Male">Male</SelectItem>
-                <SelectItem value="Female">Female</SelectItem>
-                <SelectItem value="Other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          <TabsContent value="info" className="animate-fade-in">
+            <CardContent className="space-y-6 pt-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="name" className="text-sm font-medium">
+                    Patient Name <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="name"
+                    placeholder="Full name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="transition duration-200 hover:border-medical-primary focus:border-medical-primary"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="age" className="text-sm font-medium">
+                    Age <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    id="age"
+                    type="number"
+                    placeholder="Age in years"
+                    value={age}
+                    onChange={(e) => setAge(e.target.value)}
+                    min="0"
+                    max="120"
+                    required
+                    className="transition duration-200 hover:border-medical-primary focus:border-medical-primary"
+                  />
+                </div>
+              </div>
+              
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <label htmlFor="sex" className="text-sm font-medium">
+                    Sex <span className="text-red-500">*</span>
+                  </label>
+                  <Select value={sex} onValueChange={(value) => setSex(value as 'Male' | 'Female' | 'Other')}>
+                    <SelectTrigger className="transition duration-200 hover:border-medical-primary focus:border-medical-primary">
+                      <SelectValue placeholder="Select sex" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Male">Male</SelectItem>
+                      <SelectItem value="Female">Female</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="address" className="text-sm font-medium">
+                    Address
+                  </label>
+                  <Input
+                    id="address"
+                    placeholder="Patient's address"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="transition duration-200 hover:border-medical-primary focus:border-medical-primary"
+                  />
+                </div>
+              </div>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setActiveTab("diagnosis")}
+                className="w-full transition-transform duration-200 hover:scale-105"
+              >
+                Next: Diagnosis Information
+              </Button>
+            </CardContent>
+          </TabsContent>
           
-          <div className="space-y-2">
-            <label htmlFor="symptoms" className="text-sm font-medium">
-              Symptoms <span className="text-red-500">*</span>
-            </label>
-            <Textarea
-              id="symptoms"
-              placeholder="Describe the patient's symptoms"
-              value={symptoms}
-              onChange={(e) => setSymptoms(e.target.value)}
-              required
-              className="min-h-[100px]"
-            />
-          </div>
+          <TabsContent value="diagnosis" className="animate-fade-in">
+            <CardContent className="space-y-6 pt-4">
+              <div className="space-y-2">
+                <label htmlFor="symptoms" className="text-sm font-medium">
+                  Symptoms <span className="text-red-500">*</span>
+                </label>
+                <Textarea
+                  id="symptoms"
+                  placeholder="Describe the patient's symptoms"
+                  value={symptoms}
+                  onChange={(e) => setSymptoms(e.target.value)}
+                  required
+                  className="min-h-[100px] transition duration-200 hover:border-medical-primary focus:border-medical-primary"
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="diagnosisDescription" className="text-sm font-medium">
+                  Doctor's Initial Diagnosis <span className="text-red-500">*</span>
+                </label>
+                <Textarea
+                  id="diagnosisDescription"
+                  placeholder="Enter your initial diagnosis"
+                  value={diagnosisDescription}
+                  onChange={(e) => setDiagnosisDescription(e.target.value)}
+                  required
+                  className="min-h-[100px] transition duration-200 hover:border-medical-primary focus:border-medical-primary"
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setActiveTab("info")}
+                  className="flex-1 transition-transform duration-200 hover:scale-105"
+                >
+                  Back: Patient Info
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setActiveTab("images")}
+                  className="flex-1 transition-transform duration-200 hover:scale-105"
+                >
+                  Next: Images
+                </Button>
+              </div>
+            </CardContent>
+          </TabsContent>
           
-          <div className="space-y-2">
-            <label htmlFor="diagnosisDescription" className="text-sm font-medium">
-              Doctor's Initial Diagnosis <span className="text-red-500">*</span>
-            </label>
-            <Textarea
-              id="diagnosisDescription"
-              placeholder="Enter your initial diagnosis"
-              value={diagnosisDescription}
-              onChange={(e) => setDiagnosisDescription(e.target.value)}
-              required
-              className="min-h-[100px]"
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <label htmlFor="image" className="text-sm font-medium">
-              Image Upload (Optional)
-            </label>
-            <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-md">
-              <div className="flex flex-col items-center space-y-4 text-center">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className="max-h-48 max-w-full rounded-md"
+          <TabsContent value="images" className="animate-fade-in">
+            <CardContent className="space-y-6 pt-4">
+              {/* Medical Image Upload */}
+              <div className="space-y-2">
+                <label htmlFor="medicalImage" className="text-sm font-medium flex items-center">
+                  <Image className="h-4 w-4 mr-1 text-medical-primary" />
+                  Medical Condition Image <span className="text-red-500">*</span>
+                </label>
+                <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-md transition-all duration-300 hover:border-medical-primary hover:bg-medical-light/20">
+                  <div className="flex flex-col items-center space-y-4 text-center">
+                    {medicalImagePreview ? (
+                      <div className="relative hover-scale">
+                        <img 
+                          src={medicalImagePreview} 
+                          alt="Medical condition preview" 
+                          className="max-h-48 max-w-full rounded-md"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-0 right-0 animate-fade-in"
+                          onClick={() => {
+                            setMedicalImage(null);
+                            setMedicalImagePreview(null);
+                          }}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    ) : (
+                      <Image className="h-10 w-10 text-muted-foreground animate-pulse" />
+                    )}
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium">
+                        {medicalImagePreview ? "Change Medical Image" : "Upload a medical condition image"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        This image will be used to show the medical condition (Max 5MB)
+                      </div>
+                    </div>
+                    <Input
+                      id="medicalImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'medical')}
+                      className="hidden"
                     />
                     <Button
                       type="button"
-                      variant="destructive"
+                      variant="outline"
                       size="sm"
-                      className="absolute top-0 right-0"
-                      onClick={() => {
-                        setImage(null);
-                        setImagePreview(null);
-                      }}
+                      onClick={() => document.getElementById("medicalImage")?.click()}
+                      className="transition-transform duration-200 hover:scale-105"
                     >
-                      &times;
+                      {medicalImagePreview ? "Replace" : "Select Image"}
                     </Button>
                   </div>
-                ) : (
-                  <Upload className="h-10 w-10 text-muted-foreground" />
-                )}
-                <div className="space-y-2">
-                  <div className="text-sm font-medium">
-                    {imagePreview ? "Change Image" : "Upload an image"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Upload a medical image related to the patient's condition (Max 5MB)
+                </div>
+              </div>
+              
+              {/* Patient Photo Upload */}
+              <div className="space-y-2">
+                <label htmlFor="patientImage" className="text-sm font-medium flex items-center">
+                  <UserCircle className="h-4 w-4 mr-1 text-medical-primary" />
+                  Patient Photo (Optional)
+                </label>
+                <div className="flex flex-col items-center p-4 border-2 border-dashed rounded-md transition-all duration-300 hover:border-medical-primary hover:bg-medical-light/20">
+                  <div className="flex flex-col items-center space-y-4 text-center">
+                    {patientImagePreview ? (
+                      <div className="relative hover-scale">
+                        <img 
+                          src={patientImagePreview} 
+                          alt="Patient photo preview" 
+                          className="max-h-48 max-w-full rounded-md"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute top-0 right-0 animate-fade-in"
+                          onClick={() => {
+                            setPatientImage(null);
+                            setPatientImagePreview(null);
+                          }}
+                        >
+                          &times;
+                        </Button>
+                      </div>
+                    ) : (
+                      <UserCircle className="h-10 w-10 text-muted-foreground animate-pulse" />
+                    )}
+                    <div className="space-y-2">
+                      <div className="text-sm font-medium">
+                        {patientImagePreview ? "Change Patient Photo" : "Upload a patient photo"}
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        This photo will appear in the patient profile section of the prescription (Max 5MB)
+                      </div>
+                    </div>
+                    <Input
+                      id="patientImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageChange(e, 'patient')}
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => document.getElementById("patientImage")?.click()}
+                      className="transition-transform duration-200 hover:scale-105"
+                    >
+                      {patientImagePreview ? "Replace" : "Select Photo"}
+                    </Button>
                   </div>
                 </div>
-                <Input
-                  id="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => document.getElementById("image")?.click()}
-                >
-                  {imagePreview ? "Replace" : "Select Image"}
-                </Button>
               </div>
-            </div>
-          </div>
-        </CardContent>
-        <CardFooter>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setActiveTab("diagnosis")}
+                className="w-full transition-transform duration-200 hover:scale-105"
+              >
+                Back: Diagnosis Information
+              </Button>
+            </CardContent>
+          </TabsContent>
+        </Tabs>
+                
+        <CardFooter className="pb-6">
           <div className="flex justify-end gap-4 w-full">
             <Button
               type="button"
               variant="outline"
               onClick={() => navigate(-1)}
               disabled={isSubmitting}
+              className="transition-transform duration-200 hover:scale-105"
             >
               Cancel
             </Button>
             <Button 
               type="submit"
-              className="bg-medical-primary hover:bg-medical-secondary"
+              className="bg-medical-primary hover:bg-medical-secondary transition-all duration-300 hover:scale-105"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

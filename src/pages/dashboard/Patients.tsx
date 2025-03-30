@@ -24,7 +24,7 @@ import {
   CardTitle 
 } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
-import { Search, PlusCircle, Loader2 } from 'lucide-react';
+import { Search, PlusCircle, Loader2, MapPin } from 'lucide-react';
 
 const Patients = () => {
   const { doctor } = useAuth();
@@ -125,15 +125,15 @@ const Patients = () => {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className="animate-fade-in">
         <CardHeader>
           <div className="flex justify-between items-center">
             <div>
-              <CardTitle>Patients</CardTitle>
+              <CardTitle>Teethli Patients</CardTitle>
               <CardDescription>Manage your patient records</CardDescription>
             </div>
             <Button 
-              className="bg-medical-primary hover:bg-medical-secondary"
+              className="bg-medical-primary hover:bg-medical-secondary transition-all duration-300 hover:scale-105"
               onClick={() => navigate('/dashboard/add-patient')}
             >
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -148,7 +148,7 @@ const Patients = () => {
               <Input
                 type="search"
                 placeholder="Search patients by name..."
-                className="pl-8"
+                className="pl-8 transition duration-200 hover:border-medical-primary focus:border-medical-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -158,6 +158,7 @@ const Patients = () => {
               onClick={handleSearch}
               disabled={isSearching}
               variant="outline"
+              className="transition-transform duration-200 hover:scale-105"
             >
               {isSearching ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -172,29 +173,45 @@ const Patients = () => {
               <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-medical-primary"></div>
             </div>
           ) : filteredPatients.length > 0 ? (
-            <div className="rounded-md border">
+            <div className="rounded-md border animate-fade-in">
               <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Age</TableHead>
                     <TableHead>Sex</TableHead>
+                    <TableHead>Address</TableHead>
                     <TableHead>Date Added</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredPatients.map((patient) => (
-                    <TableRow key={patient.id}>
+                  {filteredPatients.map((patient, index) => (
+                    <TableRow 
+                      key={patient.id} 
+                      className="hover:bg-medical-light/30 transition-colors duration-200 animate-fade-in"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <TableCell className="font-medium">{patient.name}</TableCell>
                       <TableCell>{patient.age}</TableCell>
                       <TableCell>{patient.sex}</TableCell>
+                      <TableCell>
+                        {patient.address ? (
+                          <div className="flex items-center text-sm">
+                            <MapPin className="w-3 h-3 mr-1 text-medical-primary" />
+                            <span className="truncate max-w-[150px]">{patient.address}</span>
+                          </div>
+                        ) : (
+                          "-"
+                        )}
+                      </TableCell>
                       <TableCell>{formatDate(patient.createdAt)}</TableCell>
                       <TableCell className="text-right">
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/dashboard/patient/${patient.id}`)}
+                          className="hover:text-medical-primary transition-colors duration-200"
                         >
                           View
                         </Button>
@@ -205,13 +222,13 @@ const Patients = () => {
               </Table>
             </div>
           ) : (
-            <div className="text-center py-8">
+            <div className="text-center py-8 animate-fade-in">
               <p className="text-muted-foreground mb-4">
                 {searchTerm ? "No patients found matching your search." : "No patients added yet."}
               </p>
               {!searchTerm && (
                 <Button
-                  className="bg-medical-primary hover:bg-medical-secondary"
+                  className="bg-medical-primary hover:bg-medical-secondary transition-all duration-300 hover:scale-105"
                   onClick={() => navigate('/dashboard/add-patient')}
                 >
                   <PlusCircle className="mr-2 h-4 w-4" />

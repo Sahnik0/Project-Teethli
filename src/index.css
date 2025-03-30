@@ -89,17 +89,138 @@
   
   /* Print styles for prescription */
   @media print {
+    .prescription {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px;
+      font-family: 'Nunito Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    
+    .header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #2D5986;
+    }
+    
+    .doctor-info h1 {
+      font-size: 24px;
+      margin: 0;
+      color: #1A365D;
+    }
+    
+    .doctor-info p {
+      margin: 5px 0;
+      color: #2D5986;
+    }
+    
+    .patient-info {
+      margin-bottom: 30px;
+    }
+    
+    .patient-info h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #1A365D;
+    }
+    
+    .patient-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+    }
+    
+    .patient-info-item p {
+      margin: 0;
+    }
+    
+    .patient-info-label {
+      font-weight: 600;
+      color: #1A365D;
+    }
+    
+    .patient-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      margin-right: 10px;
+      object-fit: cover;
+      border: 2px solid #e5e7eb;
+      vertical-align: middle;
+    }
+    
+    .patient-name-with-avatar {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .diagnosis-section h2, .treatment-section h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: #1A365D;
+      padding-bottom: 5px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .rx-symbol {
+      font-size: 24px;
+      font-weight: bold;
+      margin-right: 10px;
+      color: #1A365D;
+    }
+    
+    .medical-image {
+      max-width: 100%;
+      max-height: 300px;
+      margin: 15px auto;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      display: block;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      text-align: right;
+      font-style: italic;
+      color: #2D5986;
+    }
+    
+    .timestamp {
+      font-size: 14px;
+      color: #2D5986;
+      text-align: right;
+      margin-bottom: 10px;
+    }
+    
     .no-print {
-      display: none !important;
+      display: none;
     }
     
-    .print-only {
-      display: block !important;
+    /* Treatment plan formatting */
+    .treatment-plan-content {
+      margin-top: 10px;
     }
     
-    body {
-      background-color: white;
-      font-family: 'Nunito Sans', sans-serif;
+    .treatment-plan-content ul {
+      padding-left: 20px;
+      list-style-type: none;
+      margin-top: 10px;
+    }
+    
+    .treatment-plan-content li {
+      position: relative;
+      padding-left: 15px;
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    
+    .treatment-plan-content li:before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: #2D5986;
     }
   }
 }
@@ -119,4 +240,50 @@
   background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M50 50 L50 50 L50 50 L50 50' stroke='%23E6E6E6' stroke-width='0.5'/%3E%3C/svg%3E");
   opacity: 0.05;
   z-index: -1;
+}
+
+.patient-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e5e7eb;
+  margin-right: 10px;
+}
+
+.patient-name-with-avatar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Format treatment plan with bullet points and bold text */
+.treatment-plan-content {
+  margin-top: 10px;
+}
+
+.treatment-plan-content ul {
+  padding-left: 20px;
+  list-style-type: none;
+  margin-top: 10px;
+}
+
+.treatment-plan-content li {
+  position: relative;
+  padding-left: 15px;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.treatment-plan-content li:before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: #2D5986;
+  font-weight: bold;
+}
+
+/* Special formatting for bold text */
+.bold-text {
+  font-weight: 700;
 }
